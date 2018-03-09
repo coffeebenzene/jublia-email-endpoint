@@ -17,9 +17,14 @@ def save_emails():
             missing.append(col)
     if missing:
         missing = ", ".join(missing)
-        abort(400, "Bad request: missing fields: {}".format(missing))
+        abort(400, "Missing fields: {}".format(missing))
+    request_data = request.form.to_dict()
+    try:
+        request_data["event_id"] = int(request_data["event_id"])
+    except ValueError:
+        abort(400, "Bad event_id")
     # Save email
-    email = database.Email(request.form)
+    email = database.Email(request_data)
     # TODO
     # Response
     response = make_response("test response\n{}".format(request.form))
