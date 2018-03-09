@@ -21,6 +21,18 @@ class Email(object):
         for field in self.accepted_input:
             setattr(self, field, request_form[field])
         self.sent = False
+    
+    def insert(self):
+        """Tries to insert self. Returns None if successful, or the error that occured"""
+        fields = []
+        for col in self.columns:
+            fields.append(getattr(self, col))
+        try:
+            with SqliteContext() as c:
+                c.execute("INSERT INTO {} VALUES (?,?,?,?,?)".format(self.tablename), fields)
+                return None
+        except sqlite3.DatabaseError as e:
+            return e
 
 class Recipient(object):
     tablename = "recipients"

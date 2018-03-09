@@ -32,9 +32,14 @@ def save_emails():
     
     # Save email
     email = database.Email(request_data)
-    # TODO
+    error = email.insert()
+    if error:
+        abort(400, "Error: {}".format(error))
+    # TODO: submit job if using task queue.
+    
     # Response
-    response = make_response("test response\n{}".format(request.form))
+    response_str = "Successful"
+    response = make_response(response_str)
     response.headers["content-type"] = "text/plain"
     return response
 
