@@ -9,6 +9,12 @@ app.secret_key = "NUgYcV5U883SS24CBR6kKYa9eQHkD1Sgp7hhwuC51Ok"
 app.logger # Initialise the app logger first.
 database.db_init()
 
+@app.errorhandler(400)
+def bad_request(e):
+    response = make_response(str(e))
+    response.headers["content-type"] = "text/plain"
+    return response
+
 @app.route('/save_emails', methods=["POST"])
 def save_emails():
     # Basic validation
