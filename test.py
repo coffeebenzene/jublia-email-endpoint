@@ -9,10 +9,10 @@ except ImportError: # Python 3
     from urllib.error import HTTPError
 
 data = {"test":"tesy", # extra argument should be ignored.
-        "event_id":"123",
+        "event_id":123,
         "email_subject": "This is a test email.",
         "email_content":"<html><body>this is a test message &amp; Here is a smiley: \u263A</body></html>",
-        "timestamp":"12-03-2018 00:00:00.000"}
+        "timestamp":"2018-03-21 00:00:00"}
 
 data = urlencode(data)
 data = bytes(data, encoding="utf-8")

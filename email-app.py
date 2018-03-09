@@ -1,4 +1,5 @@
 from flask import Flask, request, make_response, abort
+import datetime
 import database
 import logging
 
@@ -23,6 +24,12 @@ def save_emails():
         request_data["event_id"] = int(request_data["event_id"])
     except ValueError:
         abort(400, "Bad event_id")
+    try:
+        request_data["timestamp"] = datetime.datetime.strptime(request_data["timestamp"],
+                                                               "%Y-%m-%d %H:%M:%S")
+    except ValueError:
+        abort(400, "Bad timestamp")
+    
     # Save email
     email = database.Email(request_data)
     # TODO

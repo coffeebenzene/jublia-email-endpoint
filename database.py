@@ -6,20 +6,21 @@ logger = logging.getLogger("email-app") # Need to fit module/app name
 db_path = "email.db"
 
 class Email(object):
-    
     tablename = "emails"
     column_spec = ("event_id integer PRIMARY KEY NOT NULL",
                    "email_subject text",
                    "email_content text",
-                   "timestamp text", # ISO8601 "YYYY-MM-DD HH:MM:SS.SSS" in UTC+0.
+                   "timestamp timestamp", # "YYYY-MM-DD HH:MM:SS" in UTC+8.
                    "sent integer"
                   )
+    indexes = ["'sent_index' ON emails (timestamp, sent)"]
     columns = tuple(cspec.split()[0] for cspec in column_spec)
     accepted_input = ["event_id", "email_subject", "email_content", "timestamp"]
     
     def __init__(self, request_form):
         for field in self.accepted_input:
             setattr(self, field, request_form[field])
+        self.sent = False
 
 class Recipient(object):
     tablename = "recipients"
@@ -65,15 +66,18 @@ def db_init():
         # Create table if it doesn't exist.
         c = conn.cursor()
         for table in [Email, Recipient]:
-            c.execute("""CREATE TABLE IF NOT EXISTS {}({})"""
+            c.execute("CREATE TABLE IF NOT EXISTS {}({})"
                      .format(table.tablename,
                              ", ".join(table.column_spec)
                             )
                      )
+            if hasattr(table, "indexes"):
+                for index_spec in table.indexes:
+                    c.execute("CREATE INDEX IF NOT EXISTS " + index_spec)
         # Debugging
         if logger.getEffectiveLevel() <= logging.DEBUG:
-            all_tables = conn.execute("SELECT name FROM sqlite_master WHERE type='table'").fetchall()
-            logger.debug(all_tables)
+            all_items = conn.execute("SELECT name FROM sqlite_master").fetchall()
+            logger.debug(all_items)
         conn.commit()
     finally:
         if conn is not None:
