@@ -43,7 +43,8 @@ class Recipient(object):
 
 class SqliteContext(object):
     def __enter__(self):
-        self.conn = sqlite3.connect(db_path)
+        self.conn = sqlite3.connect(db_path,
+                        detect_types=sqlite3.PARSE_DECLTYPES|sqlite3.PARSE_COLNAMES)
         # Turn on foregin keys by default in case.
         self.conn.execute('pragma foreign_keys=ON')
         c = self.conn.cursor()
@@ -67,7 +68,8 @@ class SqliteContext(object):
 def db_init():
     conn = None
     try:
-        conn = sqlite3.connect(db_path)
+        conn = sqlite3.connect(db_path,
+                   detect_types=sqlite3.PARSE_DECLTYPES|sqlite3.PARSE_COLNAMES)
         # Don't need foreign keys, but it's always good to turn them on by default.
         conn.execute('pragma foreign_keys=ON')
         fk_pragma = conn.execute('pragma foreign_keys').fetchone()
