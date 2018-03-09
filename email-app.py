@@ -12,9 +12,9 @@ database.db_init()
 def save_emails():
     # Basic validation
     missing = []
-    for col in database.Email.columns:
-        if col not in request.form:
-            missing.append(col)
+    for field in database.Email.accepted_input:
+        if field not in request.form:
+            missing.append(field)
     if missing:
         missing = ", ".join(missing)
         abort(400, "Missing fields: {}".format(missing))

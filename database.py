@@ -11,13 +11,15 @@ class Email(object):
     column_spec = ("event_id integer PRIMARY KEY NOT NULL",
                    "email_subject text",
                    "email_content text",
-                   "timestamp text" # ISO8601 "YYYY-MM-DD HH:MM:SS.SSS" in UTC+0.
+                   "timestamp text", # ISO8601 "YYYY-MM-DD HH:MM:SS.SSS" in UTC+0.
+                   "sent integer"
                   )
     columns = tuple(cspec.split()[0] for cspec in column_spec)
+    accepted_input = ["event_id", "email_subject", "email_content", "timestamp"]
     
     def __init__(self, request_form):
-        for col in self.columns:
-            setattr(self, col, request_form[col])
+        for field in self.accepted_input:
+            setattr(self, field, request_form[field])
 
 class Recipient(object):
     tablename = "recipients"
