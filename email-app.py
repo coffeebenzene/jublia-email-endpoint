@@ -13,6 +13,7 @@ database.db_init()
 def bad_request(e):
     response = make_response(str(e))
     response.headers["content-type"] = "text/plain"
+    response.status_code = 400
     return response
 
 @app.route('/save_emails', methods=["POST"])

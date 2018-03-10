@@ -114,10 +114,18 @@ def db_init():
             if hasattr(table, "indexes"):
                 for index_spec in table.indexes:
                     c.execute("CREATE INDEX IF NOT EXISTS " + index_spec)
+        
+        # Initialise some recipients (debug?)
+        c.execute("SELECT COUNT(*) FROM {}".format(Recipient.tablename))
+        if c.fetchone()[0] == 0:
+            Recipient.create("receiver1@example.com")
+            Recipient.create("receiver2@example.com")
+            Recipient.create("receiver3@example.com")
+        
         # Debugging
         if logger.getEffectiveLevel() <= logging.DEBUG:
             all_items = conn.execute("SELECT name FROM sqlite_master").fetchall()
-            logger.debug(all_items)
+            logger.debug("All items in DB: " + str(all_items))
         conn.commit()
     finally:
         if conn is not None:
