@@ -8,17 +8,26 @@ except ImportError: # Python 3
     from urllib.request import Request, urlopen
     from urllib.error import HTTPError
 
-data = {"test":"tesy", # extra argument should be ignored.
-        "event_id":123,
-        "email_subject": "This is a test email.",
-        "email_content":"<html><body>this is a test message &amp; Here is a smiley: \u263A</body></html>",
-        "timestamp":"2018-03-21 00:00:00"}
+template_data = {"test":"tesy", # extra argument should be ignored.
+                 "event_id":None,
+                 "email_subject": "This is test email: ",
+                 "email_content":"<html><body>this is a test message &amp; Here is a smiley: \u263A msg:{} </body></html>",
+                 "timestamp":"2018-03-{:02} 00:00:00"}
 
-data = urlencode(data)
-data = bytes(data, encoding="utf-8")
-req = Request("http://127.0.0.1:5000/save_emails", data=data)
-try:
-    f = urlopen(req)
-    print(f.read())
-except HTTPError as e:
-    print(e.read())
+for i in range(33):
+    data = template_data.copy()
+    data["event_id"] = i
+    data["email_subject"] += str(i)
+    data["email_content"] = data["email_content"].format(i)
+    data["timestamp"] = data["timestamp"].format(i)
+    
+    data = urlencode(data)
+    data = bytes(data, encoding="utf-8")
+    req = Request("http://127.0.0.1:5000/save_emails", data=data)
+    
+    print(i)
+    try:
+        f = urlopen(req)
+        print(f.read())
+    except HTTPError as e:
+        print(e.read())
