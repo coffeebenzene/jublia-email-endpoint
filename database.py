@@ -17,30 +17,52 @@ class Email(object):
     columns = tuple(cspec.split()[0] for cspec in column_spec)
     accepted_input = ["event_id", "email_subject", "email_content", "timestamp"]
     
-    def __init__(self, request_form):
-        for field in self.accepted_input:
-            setattr(self, field, request_form[field])
-        self.sent = False
+    def __init__(self, info=None):
+        if info is None:
+            info = [None for field in self.columns]
+        for i, field in enumerate(self.columns):
+            setattr(self, field, info[i])
     
-    def insert(self):
-        """Tries to insert self. Returns None if successful, or the error that occured"""
-        fields = []
-        for col in self.columns:
-            fields.append(getattr(self, col))
-        try:
-            with SqliteContext() as c:
-                c.execute("INSERT INTO {} VALUES (?,?,?,?,?)".format(self.tablename), fields)
-                return None
-        except sqlite3.DatabaseError as e:
-            return e
+    
+    @classmethod
+    def create(cls, request_form):
+        new_email_params = []
+        for field in cls.accepted_input:
+            new_email_params.append(request_form[field])
+        new_email_params.append(False) # sent field
+        
+        with SqliteContext() as c:
+            c.execute("INSERT INTO {} VALUES (?,?,?,?,?)".format(cls.tablename),
+                      new_email_params)
+            return cls(new_email_params)
+    
 
 class Recipient(object):
     tablename = "recipients"
-    column_spec = ("recipient text NOT NULL",)
+    column_spec = ("recipient_email text PRIMARY KEY",)
     columns = tuple(cspec.split()[0] for cspec in column_spec)
+    
+    def __init__(self, info=None):
+        if info is None:
+            info = [None for field in self.columns]
+        for i, field in enumerate(self.columns):
+            setattr(self, field, info[i])
+    
+    @classmethod
+    def create(cls, recipient_email):
+        with SqliteContext() as c:
+            c.execute("INSERT INTO {} VALUES (?)".format(cls.tablename),
+                      [recipient_email])
+            return cls([recipient_email])
+    
+
+
+class DBError(Exception):
+    pass
 
 
 
+# Private classes below. Don't use outside of this module.
 class SqliteContext(object):
     def __enter__(self):
         self.conn = sqlite3.connect(db_path,
@@ -56,7 +78,10 @@ class SqliteContext(object):
             import traceback
             logger.error("{}:{}".format(exc_type,exc_value))
             traceback.print_tb(tb)
-            capture = False # repropagate exception.
+            if isinstance(exc_value, sqlite3.DatabaseError):
+                raise DBError(exc_value) # Wrap error
+            else:
+                capture = False # repropagate exception.
         else:
             self.conn.commit()
         self.conn.close()
@@ -77,6 +102,7 @@ def db_init():
             logger.warning("WARNING: Foreign keys may not be enabled."
                            " pragma foreign_keys is {}".format(fk_pragma))
         conn.commit()
+        
         # Create table if it doesn't exist.
         c = conn.cursor()
         for table in [Email, Recipient]:

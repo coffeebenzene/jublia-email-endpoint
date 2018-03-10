@@ -37,10 +37,10 @@ def save_emails():
         abort(400, "Bad timestamp")
     
     # Save email
-    email = database.Email(request_data)
-    error = email.insert()
-    if error:
-        abort(400, "Error: {}".format(error))
+    try:
+        email = database.Email.create(request_data)
+    except database.DBError as e:
+        abort(400, "Error: {}".format(e))
     # TODO: submit job if using task queue.
     
     # Response
