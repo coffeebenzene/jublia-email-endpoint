@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 import database
 from email.mime.text import MIMEText
 import smtplib
