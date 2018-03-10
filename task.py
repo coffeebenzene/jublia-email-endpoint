@@ -21,7 +21,7 @@ def send_email(email, recipients):
     # Crude way to check html email.
     if "<!DOCTYPE html>" in email.email_content or "<html>" in email.email_content:
         subtype = "html"
-    msg = MIMEText(email.email_content, subtype)
+    msg = MIMEText(email.email_content, subtype, 'utf-8')
     msg["Subject"] = email.email_subject
     msg["From"] = application_email
     msg["To"] = ", ".join(recipients)
@@ -39,8 +39,6 @@ if __name__ == '__main__':
     emails = database.Email.get_for_send()
     recipients = [e.recipient_email for e in database.Recipient.get_all()]
     for email in emails:
-        print(email.event_id)
         send_email(email, recipients)
-        print("sending successful")
         email.set_sent(True)
-        print("marked")
+        print("sent {}".format(email.event_id))
