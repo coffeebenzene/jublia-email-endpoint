@@ -40,6 +40,11 @@ if __name__ == '__main__':
     emails = database.Email.get_for_send()
     recipients = [e.recipient_email for e in database.Recipient.get_all()]
     for email in emails:
-        send_email(email, recipients)
-        email.set_sent(True)
-        print("sent {}".format(email.event_id))
+        try:
+            send_email(email, recipients)
+            email.set_sent(True)
+            print("sent {}".format(email.event_id))
+        except Exception:
+            import sys, traceback
+            exc_type, exc_value, exc_traceback = sys.exc_info()
+            traceback.print_tb(exc_traceback)
