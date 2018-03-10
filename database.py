@@ -23,6 +23,12 @@ class Email(object):
         for i, field in enumerate(self.columns):
             setattr(self, field, info[i])
     
+    def set_sent(self, sent):
+        with SqliteContext() as c:
+            c.execute("UPDATE {} SET sent=? WHERE event_id=?".format(self.tablename),
+                      (sent, self.event_id))
+            self.sent = sent
+            return True
     
     @classmethod
     def create(cls, request_form):
@@ -36,6 +42,14 @@ class Email(object):
                       new_email_params)
             return cls(new_email_params)
     
+    @classmethod
+    def get_for_send(cls):
+        with SqliteContext() as c:
+            c.execute("""SELECT * FROM {} WHERE
+                         timestamp <= datetime('now') AND sent=0""".format(cls.tablename))
+            return (cls(row) for row in c.fetchall())
+
+
 
 class Recipient(object):
     tablename = "recipients"
@@ -55,6 +69,12 @@ class Recipient(object):
                       [recipient_email])
             return cls([recipient_email])
     
+    @classmethod
+    def get_all(cls):
+        with SqliteContext() as c:
+            c.execute("SELECT * FROM {}".format(cls.tablename))
+            return (cls(row) for row in c.fetchall())
+
 
 
 class DBError(Exception):
