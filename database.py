@@ -43,6 +43,15 @@ class Email(object):
             return cls(new_email_params)
     
     @classmethod
+    def get_by_id(cls, event_id):
+        with SqliteContext() as c:
+            c.execute("""SELECT * FROM {} WHERE
+                         event_id = ?""".format(cls.tablename), [event_id])
+            row = c.fetchone()
+            if row is not None:
+                return cls(row)
+    
+    @classmethod
     def get_for_send(cls):
         with SqliteContext() as c:
             c.execute("""SELECT * FROM {} WHERE

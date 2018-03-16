@@ -1,13 +1,18 @@
 from flask import Flask, request, make_response, abort
+from redis import Redis
+from rq_scheduler import Scheduler
 import datetime
-import database
 import logging
+
+import database
+import task
 
 # Setup app
 app = Flask(__name__)
 app.secret_key = "NUgYcV5U883SS24CBR6kKYa9eQHkD1Sgp7hhwuC51Ok"
 app.logger # Initialise the app logger first.
 database.db_init()
+scheduler = Scheduler(connection=Redis()) # Uses queue "default"
 
 @app.errorhandler(400)
 def bad_request(e):
@@ -42,8 +47,10 @@ def save_emails():
         email = database.Email.create(request_data)
     except database.DBError as e:
         abort(400, "Error: {}".format(e))
-    # TODO: submit job if using task queue.
-    
+    # Schedule email.
+    # rq scheduler requires UTC time, but app uses UTC+8, offset.
+    scheduler.enqueue_at(email.timestamp - datetime.timedelta(hours=8),
+                             task.rq_send_email, email.event_id)
     # Response
     response_str = "Successful"
     response = make_response(response_str)
