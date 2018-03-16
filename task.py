@@ -36,6 +36,13 @@ def send_email(email, recipients):
     client.sendmail(application_email, recipients, msg.as_string())
     client.close()
 
+def rq_send_email(event_id):
+    email = database.Email.get_by_id(event_id)
+    recipients = [e.recipient_email for e in database.Recipient.get_all()]
+    send_email(email, recipients)
+    email.set_sent(True)
+    print("sent {}".format(email.event_id))
+
 if __name__ == '__main__':
     emails = database.Email.get_for_send()
     recipients = [e.recipient_email for e in database.Recipient.get_all()]
