@@ -27,7 +27,8 @@ To actually serve the application, a server is required (e.g. apache, nginx). Un
 
 Application:
   * Is python 2 and 3 compatiable
-  * Uses cron. Should be run on linux so cron works.
+  * ~~Uses cron. Should be run on linux so cron works.~~
+  * Uses rqscheduler, which uses redis. Needs linux for fork() to work.
   * Uses sqlite DB.
   * Handles unicode (flask and sqlite will handle unicode by default)
   * Uses custom-made ORM(?) (refer to `database.py` file)
