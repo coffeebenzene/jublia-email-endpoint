@@ -1,7 +1,9 @@
 import sqlite3
 import logging
 logger = logging.getLogger("email-app") # Need to fit module/app name
-# For some reason, I can't get subloggers to propagate, so use global logger
+#logger.setLevel(logging.DEBUG)
+# app.logger is a FlaskDebugLogger. Which apparently python's normal logger
+# doesn't make a ancestor logger nicely from. Must manually set logging level.
 
 db_path = "email.db"
 
